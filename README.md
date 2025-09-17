@@ -2,7 +2,11 @@
 
 ## 项目简介
 
-本项目提供了基于 World Magnetic Model 2025 (WMM2025) 的磁偏角计算功能，用于计算地球上任意位置和时间的磁偏角（地磁偏角/磁差）。项目通过 JNI (Java Native Interface) 技术封装了 GeographicLib C++ 库，提供了简洁易用的 Java 接口，适用于需要地磁数据的导航、测绘和地理信息系统等应用场景。
+本项目提供了基于 World Magnetic Model 2025 (WMM2025) 的磁偏角计算功能，用于计算地球上任意位置和时间的磁偏角（地磁偏角/磁差）。项目同时提供了 Java 和 Python 两种实现方式：
+- Java 实现通过 JNI (Java Native Interface) 技术封装了 GeographicLib C++ 库，提供了简洁易用的 Java 接口
+- Python 实现直接使用 NumPy 库进行计算，提供了独立的 Python 模块
+
+项目适用于需要地磁数据的导航、测绘和地理信息系统等应用场景。
 
 ## 实现原理
 
@@ -133,14 +137,22 @@ DebugHelper.printResultDetails(result);
 
 ```
 ├── src/                  # 源代码目录
-│   └── main/             # 主要代码
-│       ├── cpp/          # C++ 共享库，封装了 GeographicLib
-│       ├── java/         # Java 源代码
-│       └── resources/    # 资源文件
-│           └── magnetic/ # WMM2025 数据集文件
+│   ├── main/             # 主要代码
+│   │   ├── cpp/          # C++ 共享库，封装了 GeographicLib
+│   │   ├── java/         # Java 源代码
+│   │   └── resources/    # 资源文件
+│   │       └── magnetic/ # WMM2025 数据集文件
+│   └── python/           # Python 模块
+│       ├── __init__.py   # Python 包初始化文件
+│       ├── magnetic_declination.py # Python 磁偏角计算实现
+│       └── main.py       # Python 模块主入口
+├── tests/                # Python 测试目录
+│   └── test_magnetic_declination.py # Python 测试用例
 ├── download_wmm2025.sh   # 下载 WMM2025 数据集的脚本（可选，项目已包含数据）
 ├── run_xian_magnetic.sh  # 西安地区磁偏角计算示例脚本
+├── run_python_app.sh     # 启动 Python 应用的脚本
 ├── get_java_home.sh      # 获取 Java 环境的辅助脚本
+├── requirements.txt      # Python 项目依赖
 └── README.md             # 项目说明文档
 ```
 
@@ -153,7 +165,9 @@ DebugHelper.printResultDetails(result);
 
 ## 安装与配置
 
-### 前提条件
+### Java版本安装与配置
+
+#### 前提条件
 
 1. Java JDK 8 或更高版本 - 项目已在Java 17环境下测试通过
 2. 支持 C++ 共享库的运行环境
@@ -162,6 +176,34 @@ DebugHelper.printResultDetails(result);
    - Windows: 需要适当的C++运行时环境
 
 **注意**：WMM2025 数据集已包含在项目内部，无需额外下载
+
+### Python版本安装与配置
+
+#### 前提条件
+
+1. Python 3.6 或更高版本
+2. NumPy 库（项目依赖已在 requirements.txt 中指定）
+
+#### 安装步骤
+
+1. **安装依赖**
+   
+   项目已提供 requirements.txt 文件，包含必要的依赖项。可以使用 pip 安装：
+   
+   ```bash
+   pip install -r requirements.txt
+   ```
+   
+2. **使用运行脚本启动（推荐）**
+   
+   项目提供了便捷的启动脚本，可以直接运行：
+   
+   ```bash
+   chmod +x run_python_app.sh  # 首次运行需要添加执行权限
+   ./run_python_app.sh
+   ```
+   
+   该脚本会自动检查依赖并尝试启动GUI界面，如果GUI不可用则启动命令行界面。
 
 ### Java版本兼容性
 
@@ -185,9 +227,11 @@ DebugHelper.printResultDetails(result);
    source get_java_home.sh
    ```
 
-## 核心类说明
+## 核心类/模块说明
 
-### MagneticDeclinationCalculator
+### Java版本核心类
+
+#### MagneticDeclinationCalculator
 
 主要的磁偏角计算类，提供了初始化、计算和资源清理功能。
 
@@ -198,7 +242,7 @@ DebugHelper.printResultDetails(result);
 - `MagneticDeclinationResult calculateDeclination(double latitude, double longitude, double altitude, double julianDay)`: 根据儒略日计算磁偏角
 - `void cleanup()`: 清理资源
 
-### MagneticDeclinationResult
+#### MagneticDeclinationResult
 
 磁偏角计算结果类，封装了计算结果和状态信息。
 
@@ -208,7 +252,25 @@ DebugHelper.printResultDetails(result);
 - `boolean isSuccess()`: 检查计算是否成功
 - `String getMessage()`: 获取结果消息或错误信息
 
+### Python版本核心模块
+
+#### magnetic_declination 模块
+
+Python版本的核心模块，提供了完整的磁偏角计算功能。
+
+**主要函数**：
+
+- `calculate_declination(latitude, longitude, altitude, year, month, day)`: 根据日期计算磁偏角
+- `calculate_declination_by_julian_day(latitude, longitude, altitude, julian_day)`: 根据儒略日计算磁偏角
+- `convert_date_to_julian_day(year, month, day)`: 将日期转换为儒略日
+- `convert_julian_day_to_date(julian_day)`: 将儒略日转换为日期
+- `validate_coordinates(latitude, longitude)`: 验证经纬度参数是否有效
+- `validate_altitude(altitude)`: 验证高度参数是否有效
+- `validate_date(year, month, day)`: 验证日期参数是否有效
+
 ## 使用示例
+
+### Java版本使用示例
 
 项目中提供了完整的使用示例文件 `MagneticExample.java`，展示了如何使用核心功能计算磁偏角，包括：
 
@@ -247,11 +309,51 @@ if (initialized) {
 }
 ```
 
+### Python版本使用示例
+
+Python版本提供了简洁明了的函数接口，可以直接调用计算磁偏角。以下是主要使用方法的示例：
+
+```python
+# 导入模块
+from src.python.magnetic_declination import calculate_declination, validate_coordinates, validate_date
+
+# 验证参数
+if not validate_coordinates(latitude=34.3416, longitude=108.9398):
+    print("经纬度参数无效")
+    exit()
+
+if not validate_date(year=2025, month=1, day=1):
+    print("日期参数无效")
+    exit()
+
+# 计算磁偏角（返回弧分单位）
+result = calculate_declination(
+    latitude=34.3416,  # 纬度（西安）
+    longitude=108.9398,  # 经度（西安）
+    altitude=400,  # 高度（米）
+    year=2025,  # 年份
+    month=1,  # 月份
+    day=1  # 日期
+)
+
+# 处理结果
+if result['success']:
+    declination_minutes = result['declination']
+    declination_degrees = declination_minutes / 60.0  # 转换为度
+    direction = "东偏" if declination_minutes > 0 else "西偏"
+    
+    print(f"磁偏角：{abs(declination_degrees):.6f}度 ({direction})")
+else:
+    print(f"计算失败：{result['message']}")
+```
+
 ## 运行示例
 
-项目提供了两个主要的运行示例：
+### Java版本运行示例
 
-### 1. 使用脚本运行西安地区磁偏角计算
+项目提供了两个主要的Java版本运行示例：
+
+#### 1. 使用脚本运行西安地区磁偏角计算
 
 ```bash
 ./run_xian_magnetic.sh
@@ -259,7 +361,7 @@ if (initialized) {
 
 运行后，将显示西安（纬度34.3416，经度108.9398）在2025年至2030年期间的磁偏角数据。
 
-### 2. 编译并运行完整示例程序
+#### 2. 编译并运行完整示例程序
 
 ```bash
 # 编译示例程序
@@ -271,7 +373,37 @@ java -cp src/main/java -Djava.library.path=./src/main/cpp com.jin.geographic.Mag
 
 运行后，将显示多个城市的磁偏角计算结果以及北京地区多年的磁偏角变化趋势。
 
+### Python版本运行示例
+
+Python版本提供了多种运行方式：
+
+#### 1. 使用提供的运行脚本（推荐）
+
+```bash
+./run_python_app.sh
+```
+
+该脚本会自动检测系统环境，并根据情况启动GUI界面或命令行界面。
+
+#### 2. 直接运行Python主程序
+
+```bash
+python src/python/main.py
+```
+
+#### 3. 运行Python测试用例
+
+项目提供了完整的单元测试，可以验证功能是否正常：
+
+```bash
+python -m unittest discover -s tests
+```
+
+运行后，将显示8个测试用例的执行结果，全部通过表示功能正常。
+
 ## 注意事项
+
+### 通用注意事项
 
 1. **数据有效期**：WMM2025 模型的最佳预测期为 2025 年 1 月 1 日至 2029 年 12 月 31 日。对于超出此范围的日期，预测精度可能会降低。
 
@@ -279,7 +411,17 @@ java -cp src/main/java -Djava.library.path=./src/main/cpp com.jin.geographic.Mag
 
 3. **高度参数**：高度参数以米为单位，建议使用标准海平面高度（0米）以获得最准确的结果。
 
-4. **错误处理**：请务必检查 `MagneticDeclinationResult.isSuccess()` 的返回值，以确保计算结果有效。
+4. **错误处理**：请务必检查结果中的成功标志，以确保计算结果有效。
+
+### Python版本特殊注意事项
+
+1. **环境配置**：确保使用正确的Python环境，特别是在安装了多个Python版本的系统上
+
+2. **依赖管理**：使用pip安装requirements.txt中指定的依赖
+
+3. **GUI可用性**：GUI界面需要安装额外的依赖库，如果无法使用GUI，程序会自动切换到命令行界面
+
+4. **测试验证**：建议在使用前运行单元测试确保功能正常：`python -m unittest discover -s tests`
 
 ## 故障排除
 
