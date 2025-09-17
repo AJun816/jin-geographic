@@ -167,6 +167,8 @@ DebugHelper.printResultDetails(result);
 
 - 项目支持Java 8及以上版本的JDK/JRE
 - 已在Java 17环境下测试通过
+- 代码中主要使用了Java 8引入的java.time包（如LocalDateTime、DateTimeFormatter等），但没有使用Java 9及以上特有的特性
+- 经分析，项目完全兼容Java 8运行环境
 - 如遇到"无效源的发行版"错误，请检查脚本文件格式是否正确，确保文件末尾没有奇怪字符
 
 ### 安装步骤
