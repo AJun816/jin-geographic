@@ -17,3 +17,4 @@ fi
 
 # 运行Java程序
 java -cp target/classes -Djava.library.path=./src/main/cpp com.jin.geographic.XianMagneticVariation
+# Java版本注释：此脚本适用于Java 8及以上版本

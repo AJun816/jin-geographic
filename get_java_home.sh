@@ -3,3 +3,4 @@
 echo "Java Home: $JAVA_HOME"
 which java
 java -version
+# Java版本注释：此脚本适用于Java 8及以上版本
