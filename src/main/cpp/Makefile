@@ -7,15 +7,33 @@ LDFLAGS = -shared -L/opt/homebrew/lib -lGeographicLib -Wl,-install_name,libgeogr
 
 # 源文件和目标文件
 SRCS = GeographicLibWrapper.cpp
+test_SRCS = test_dms_magnetic.cpp
+new_test_SRCS = dms_to_magnetic.cpp
+improved_test_SRCS = dms_to_magnetic_improved.cpp
 OBJS = $(SRCS:.cpp=.o)
 TARGET = libgeographiclib_jni.dylib
+test_TARGET = test_dms_magnetic
+new_test_TARGET = dms_to_magnetic
+improved_test_TARGET = dms_to_magnetic_improved
 
 # 默认目标
-all: $(TARGET)
+all: $(TARGET) $(test_TARGET) $(new_test_TARGET) $(improved_test_TARGET)
 
 # 生成共享库
 $(TARGET): $(OBJS)
 	$(CXX) $(LDFLAGS) -o $@ $^
+
+# 生成测试程序
+$(test_TARGET): $(test_SRCS)
+	$(CXX) $(CXXFLAGS) -o $@ $^ -L/opt/homebrew/lib -lGeographicLib
+
+# 生成新的测试程序
+$(new_test_TARGET): $(new_test_SRCS)
+	$(CXX) $(CXXFLAGS) -o $@ $^ -L/opt/homebrew/lib -lGeographicLib
+
+# 生成改进版测试程序
+$(improved_test_TARGET): $(improved_test_SRCS)
+	$(CXX) $(CXXFLAGS) -o $@ $^ -L/opt/homebrew/lib -lGeographicLib
 
 # 编译源文件
 %.o: %.cpp
@@ -29,4 +47,15 @@ clean:
 install:
 	sudo cp $(TARGET) /usr/local/lib/
 
-.PHONY: all clean install
+.PHONY: all clean install test
+
+test:
+	./$(test_TARGET)
+
+# 运行新的测试程序
+test_new:
+	./$(new_test_TARGET)
+
+# 运行改进版测试程序
+test_improved:
+	./$(improved_test_TARGET)
