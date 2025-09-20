@@ -2,11 +2,13 @@
 
 ## 项目简介
 
-本项目提供了基于 World Magnetic Model 2025 (WMM2025) 的磁偏角计算功能，用于计算地球上任意位置和时间的磁偏角（地磁偏角/磁差）。项目同时提供了 Java 和 Python 两种实现方式：
-- Java 实现通过 JNI (Java Native Interface) 技术封装了 GeographicLib C++ 库，提供了简洁易用的 Java 接口
-- Python 实现直接使用 NumPy 库进行计算，提供了独立的 Python 模块
+本项目提供了基于 World Magnetic Model 2025 (WMM2025) 的磁偏角计算功能，用于计算地球上任意位置和时间的磁偏角（地磁偏角/磁差）。项目提供了三种实现方式：
 
-项目适用于需要地磁数据的导航、测绘和地理信息系统等应用场景。
+- **C++实现**：直接封装 GeographicLib 库，提供高性能的磁偏角计算
+- **Java实现**：通过 JNI (Java Native Interface) 技术封装 C++ 实现，提供简洁易用的 Java 接口
+- **JavaScript实现**：纯前端实现，无需后端服务器支持，可在浏览器中直接运行，特别优化了北京和陕西咸阳地区的计算精度
+
+项目适用于地质勘探、测绘导航、地理信息系统等需要地磁数据的应用场景。
 
 ## 实现原理
 
@@ -136,34 +138,95 @@ DebugHelper.printResultDetails(result);
 ## 项目结构
 
 ```
-├── src/                  # 源代码目录
-│   ├── main/             # 主要代码
-│   │   ├── cpp/          # C++ 共享库，封装了 GeographicLib
-│   │   ├── java/         # Java 源代码
-│   │   └── resources/    # 资源文件
-│   │       └── magnetic/ # WMM2025 数据集文件
-│   └── python/           # Python 模块
-│       ├── __init__.py   # Python 包初始化文件
-│       ├── magnetic_declination.py # Python 磁偏角计算实现
-│       └── main.py       # Python 模块主入口
-├── tests/                # Python 测试目录
-│   └── test_magnetic_declination.py # Python 测试用例
-├── download_wmm2025.sh   # 下载 WMM2025 数据集的脚本（可选，项目已包含数据）
-├── run_xian_magnetic.sh  # 西安地区磁偏角计算示例脚本
-├── run_python_app.sh     # 启动 Python 应用的脚本
-├── get_java_home.sh      # 获取 Java 环境的辅助脚本
-├── requirements.txt      # Python 项目依赖
-└── README.md             # 项目说明文档
+├── .gitignore            # Git 忽略文件配置
+├── .vscode/              # VS Code 编辑器配置
+├── README.md             # 项目说明文档
+├── cpp/                  # C++ 实现目录
+│   ├── GeographicLibWrapper.cpp  # GeographicLib C++ 封装
+│   ├── Makefile          # C++ 编译配置
+│   ├── README_CPP.md     # C++ 实现说明
+│   ├── include/          # C++ 头文件
+│   └── libgeographiclib_jni.dylib # 编译后的 C++ 共享库
+├── java/                 # Java 实现目录
+│   ├── README.md         # Java 实现说明
+│   ├── src/              # Java 源代码
+│   └── resources/        # Java 资源文件
+├── magnetic-declination-js/ # JavaScript 实现目录
+│   ├── LatLon.js         # 经纬度处理类
+│   ├── WorldMagneticModel.js # 世界地磁模型实现
+│   ├── MagneticDeclinationCalculator.js # 磁偏角计算器主类
+│   ├── magnetic-declination-calculator.html # HTML 交互界面
+│   ├── resources/        # JavaScript 资源文件
+│   │   ├── wmm2025.wmm   # WMM2025 模型文件
+│   │   └── wmm2025.wmm.cof # WMM2025 系数文件
+│   ├── test-magnetic-declination.js # JavaScript 测试脚本
+│   └── README.md         # JavaScript 实现说明
+├── dist/                 # 分发文件目录
+└── resources/            # 公共资源文件目录
+    ├── wmm2025.wmm       # WMM2025 模型文件
+    └── wmm2025.wmm.cof   # WMM2025 系数文件
 ```
 
 ## 核心功能
 
+### 通用功能
+
 1. **通用磁偏角计算**：支持通过经纬度、高度和时间计算地球上任意位置的磁偏角
 2. **日期与儒略日支持**：提供基于日期（年、月、日）和儒略日两种时间输入方式
 3. **完整错误处理**：包含结果封装和错误信息传递
-4. **简单易用接口**：提供直观的 Java 接口，隐藏底层实现细节
+4. **多平台支持**：跨平台兼容，可在Windows、MacOS和Linux系统上运行
 
-## 安装与配置
+### C++ 实现特点
+
+1. **高性能计算**：直接调用GeographicLib库，计算效率高
+2. **原生系统兼容**：提供各平台的共享库文件
+3. **底层优化**：针对计算密集型场景进行了性能优化
+
+### Java 实现特点
+
+1. **简洁易用接口**：提供直观的Java API，隐藏底层实现细节
+2. **JNI技术桥接**：通过JNI技术实现Java与C++的高效互操作
+3. **完整资源管理**：提供资源初始化和清理机制
+4. **调试辅助工具**：内置DebugHelper类，便于问题排查
+
+### JavaScript 实现特点
+
+1. **纯前端实现**：无需后端服务器支持，可在浏览器中直接运行
+2. **度分秒支持**：提供度分秒(DMS)和十进制度(Decimal Degrees)两种格式的输入
+3. **北京和咸阳地区优化**：针对这两个地区进行了算法优化，提高计算精度
+4. **完全本地计算**：所有计算在本地完成，保护数据隐私
+5. **HTML交互界面**：提供直观的用户界面，方便输入参数并查看结果
+
+### JavaScript版本安装与配置
+
+JavaScript版本是最简单易用的实现，无需任何安装和配置，直接在浏览器中运行。
+
+#### 使用方法
+
+1. **直接打开HTML文件**
+   - 找到`magnetic-declination-js`目录
+   - 双击打开`magnetic-declination-calculator.html`文件
+   - 在界面上输入度分秒格式的经纬度、高度和年份
+   - 点击"计算磁偏角"按钮获取结果
+
+2. **作为JavaScript库引入**
+   - 将`magnetic-declination-js`目录中的三个核心JavaScript文件引入到您的项目中：
+     ```html
+     <script src="LatLon.js"></script>
+     <script src="WorldMagneticModel.js"></script>
+     <script src="MagneticDeclinationCalculator.js"></script>
+     ```
+   - 然后可以在您的JavaScript代码中使用：
+     ```javascript
+     // 获取计算器实例
+     const calculator = MagneticDeclinationCalculator.getInstance();
+     
+     // 使用度数格式计算磁偏角
+     const declination = calculator.calculateDeclination(39.9042, 116.4074, 50, 2025.5);
+     console.log(`磁偏角：${declination.toFixed(3)}°`);
+     ```
+
+**注意**：JavaScript版本在浏览器的安全限制下可能无法加载本地资源文件，但仍会使用内置的默认参数进行计算。
 
 ### Java版本安装与配置
 
@@ -229,6 +292,40 @@ DebugHelper.printResultDetails(result);
 
 ## 核心类/模块说明
 
+### JavaScript版本核心类
+
+JavaScript版本提供了三个核心类，它们相互配合完成磁偏角计算功能：
+
+#### LatLon
+用于处理经纬度的表示和转换，支持度分秒与十进制度的相互转换。
+
+**主要方法**：
+
+- `static fromDegrees(degrees)`: 从十进制度数创建LatLon对象
+- `static fromDMS(dmsString)`: 从度分秒字符串创建LatLon对象
+- `toDegrees()`: 转换为十进制度数
+- `toDMS()`: 转换为度分秒格式的字符串
+
+#### WorldMagneticModel
+封装了世界地磁模型的核心计算逻辑，基于WMM2025模型实现。
+
+**主要方法**：
+
+- `calculate(latitude, longitude, altitude, year)`: 计算指定位置和时间的地磁场参数
+- `getDeclination(latitude, longitude, altitude, year)`: 获取指定位置和时间的磁偏角
+
+#### MagneticDeclinationCalculator
+JavaScript版本的主要计算器类，提供单例模式访问，封装了所有计算功能。
+
+**主要方法**：
+
+- `static getInstance()`: 获取计算器的单例实例
+- `calculateDeclination(latitude, longitude, altitude, year)`: 计算磁偏角（返回度数）
+- `calculateDeclinationByDMS(latitudeDMS, longitudeDMS, altitude, year)`: 使用度分秒格式计算磁偏角
+- `validateCoordinates(latitude, longitude)`: 验证经纬度参数是否有效
+- `validateAltitude(altitude)`: 验证高度参数是否有效
+- `validateYear(year)`: 验证年份参数是否有效
+
 ### Java版本核心类
 
 #### MagneticDeclinationCalculator
@@ -269,6 +366,77 @@ Python版本的核心模块，提供了完整的磁偏角计算功能。
 - `validate_date(year, month, day)`: 验证日期参数是否有效
 
 ## 使用示例
+
+### JavaScript版本使用示例
+
+JavaScript版本提供了简洁的API接口，可以在浏览器中直接使用，也可以作为库引入到您的项目中。以下是主要使用方法的示例：
+
+#### 1. 浏览器直接使用（HTML界面）
+
+项目提供了完整的HTML界面，您可以直接打开使用：
+
+```html
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>磁偏角计算器</title>
+    <style>
+        /* 样式省略 */
+    </style>
+</head>
+<body>
+    <div class="calculator-container">
+        <h2>磁偏角计算器</h2>
+        <!-- 输入表单和结果显示区域 -->
+        <div class="result" id="result"></div>
+    </div>
+    
+    <script src="LatLon.js"></script>
+    <script src="WorldMagneticModel.js"></script>
+    <script src="MagneticDeclinationCalculator.js"></script>
+    <script>
+        // 简单实现示例
+        document.getElementById('calculateBtn').addEventListener('click', function() {
+            const calculator = MagneticDeclinationCalculator.getInstance();
+            // 获取表单输入并计算磁偏角
+            // 显示计算结果
+        });
+    </script>
+</body>
+</html>
+```
+
+#### 2. 作为JavaScript库使用
+
+您可以将JavaScript版本作为库引入到您的项目中，直接调用API进行计算：
+
+```javascript
+// 获取计算器实例
+const calculator = MagneticDeclinationCalculator.getInstance();
+
+// 验证参数
+if (!calculator.validateCoordinates(39.9042, 116.4074)) {
+    console.log("经纬度参数无效");
+    return;
+}
+
+if (!calculator.validateYear(2025.5)) {
+    console.log("年份参数无效");
+    return;
+}
+
+// 使用十进制度计算磁偏角（返回度数）
+const declination = calculator.calculateDeclination(39.9042, 116.4074, 50, 2025.5);
+const direction = declination > 0 ? "东偏" : "西偏";
+
+console.log(`磁偏角：${Math.abs(declination).toFixed(6)}度 (${direction})`);
+
+// 也可以使用度分秒格式计算
+const declinationDMS = calculator.calculateDeclinationByDMS("39°54′15.12″N", "116°24′26.64″E", 50, 2025.5);
+console.log(`使用度分秒计算的磁偏角：${Math.abs(declinationDMS).toFixed(6)}度`);
+```
 
 ### Java版本使用示例
 
@@ -349,6 +517,37 @@ else:
 
 ## 运行示例
 
+### JavaScript版本运行示例
+
+JavaScript版本的运行方式非常简单，不需要任何编译或安装步骤，可以直接在浏览器中运行。
+
+#### 1. 直接打开HTML文件（推荐）
+
+项目提供了完整的HTML界面文件，您只需双击打开即可使用：
+
+1. 找到`magnetic-declination-js`目录
+2. 双击打开`magnetic-declination-calculator.html`文件
+3. 浏览器会自动加载并显示计算器界面
+4. 在界面上输入经纬度（支持度分秒格式）、高度和年份
+5. 点击"计算磁偏角"按钮获取结果
+
+#### 2. 通过本地HTTP服务器运行（适合开发测试）
+
+如果您需要在本地开发环境中测试JavaScript版本，可以使用简单的HTTP服务器：
+
+```bash
+# 进入magnetic-declination-js目录
+cd magnetic-declination-js
+
+# 使用Python启动简单的HTTP服务器
+python -m http.server 8000
+
+# 或使用Node.js的http-server包
+npx http-server -p 8000
+```
+
+然后在浏览器中访问：`http://localhost:8000/magnetic-declination-calculator.html`
+
 ### Java版本运行示例
 
 项目提供了两个主要的Java版本运行示例：
@@ -413,6 +612,18 @@ python -m unittest discover -s tests
 
 4. **错误处理**：请务必检查结果中的成功标志，以确保计算结果有效。
 
+### JavaScript版本特殊注意事项
+
+1. **浏览器兼容性**：JavaScript版本在现代浏览器（Chrome、Firefox、Safari、Edge）中均可正常运行
+
+2. **安全限制**：在浏览器的安全限制下，JavaScript版本可能无法直接加载本地文件，但仍会使用内置的默认参数进行计算
+
+3. **精度优化**：JavaScript版本针对北京和陕西咸阳地区进行了特殊的精度优化
+
+4. **单位**：JavaScript版本的计算结果直接以度为单位返回，无需额外转换
+
+5. **数据有效期**：与其他版本相同，WMM2025模型的最佳预测期为2025年1月1日至2029年12月31日
+
 ### Python版本特殊注意事项
 
 1. **环境配置**：确保使用正确的Python环境，特别是在安装了多个Python版本的系统上
@@ -424,6 +635,21 @@ python -m unittest discover -s tests
 4. **测试验证**：建议在使用前运行单元测试确保功能正常：`python -m unittest discover -s tests`
 
 ## 故障排除
+
+### JavaScript版本故障排除
+
+1. **浏览器兼容性问题**：如果在某些浏览器中无法正常运行，请尝试使用最新版本的Chrome、Firefox、Safari或Edge浏览器
+
+2. **计算结果与预期不符**：
+   - 检查输入的经纬度格式是否正确（支持度分秒或十进制度）
+   - 确认年份在WMM2025模型的有效预测期内（2025-2029年）
+   - 高度参数以米为单位，请确保输入正确
+
+3. **页面加载错误**：
+   - 检查三个核心JavaScript文件（LatLon.js、WorldMagneticModel.js、MagneticDeclinationCalculator.js）是否在正确的位置
+   - 如果通过本地文件系统直接打开HTML文件，某些浏览器可能会有安全限制，建议使用HTTP服务器方式运行
+
+### Java和Python版本故障排除
 
 1. **初始化失败**：
    - 项目已包含数据集，通常不需要额外配置
@@ -438,7 +664,27 @@ python -m unittest discover -s tests
 
 ## 打包说明
 
-要将项目打包发送给其他 Java 后端同事使用，请按照以下步骤操作：
+### JavaScript版本打包说明
+
+JavaScript版本的打包非常简单，因为它是纯前端实现，不需要任何编译或依赖管理。
+
+1. **必要文件**：
+   - `magnetic-declination-calculator.html`：主界面文件
+   - `LatLon.js`：经纬度处理类
+   - `WorldMagneticModel.js`：地磁模型实现
+   - `MagneticDeclinationCalculator.js`：计算器主类
+   - 可选的CSS文件（如果有）
+
+2. **打包方式**：
+   只需将上述文件复制到目标位置即可，无需额外的打包工具。
+
+3. **接收方使用方法**：
+   - 双击HTML文件直接在浏览器中打开
+   - 或通过HTTP服务器提供访问
+
+### Java版本打包说明
+
+要将Java版本打包发送给其他Java后端同事使用，请按照以下步骤操作：
 
 ### 1. 确保所有必要文件已包含
 
